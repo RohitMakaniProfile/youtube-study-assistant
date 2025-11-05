@@ -135,14 +135,16 @@ Sample UI Screenshot
 ```
 ## 🖼️ App Interface Preview
 
-### 📺 Home UI
-![Home Screenshot](https://github.com/user-attachments/assets/8745bb4d-e667-4490-8b0d-dc12630d13cd)
+## 🖼️ App UI Screenshots
 
-### 🧠 Summary & Flashcards UI
-![Summary Screen](https://github.com/user-attachments/assets/ee17eaa3-ccdc-4b7f-aa63-0b6050b7c653)
+### 📺 Summary & Home UI
+![Summary UI](assets/first.png)
 
-### 🤖 AI Chatbot Screen
-![Chatbot Screen](https://github.com/user-attachments/assets/7834e513-f56f-47e9-8b08-3ad9fb99248c)
+### 🧠  Flashcards
+![Flashcards UI](assets/second.png)
+
+### 🤖 AI Tutor Chatbot
+![Chatbot UI](assets/third.png)
 
 
 ```
