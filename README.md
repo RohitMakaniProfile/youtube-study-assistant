@@ -133,11 +133,16 @@ First time use → Click Sign in with Google and give permissions
 ```
 Sample UI Screenshot
 ```
-<img width="1834" height="849" alt="Screenshot 2025-11-05 092417" src="https://github.com/user-attachments/assets/8745bb4d-e667-4490-8b0d-dc12630d13cd" />
+## 🖼️ App Interface Preview
 
-<img width="1828" height="812" alt="Screenshot 2025-11-05 092430" src="https://github.com/user-attachments/assets/ee17eaa3-ccdc-4b7f-aa63-0b6050b7c653" />
+### 📺 Home UI
+![Home Screenshot](https://github.com/user-attachments/assets/8745bb4d-e667-4490-8b0d-dc12630d13cd)
 
-<img width="1324" height="419" alt="Screenshot 2025-11-05 092504" src="https://github.com/user-attachments/assets/7834e513-f56f-47e9-8b08-3ad9fb99248c" />
+### 🧠 Summary & Flashcards UI
+![Summary Screen](https://github.com/user-attachments/assets/ee17eaa3-ccdc-4b7f-aa63-0b6050b7c653)
+
+### 🤖 AI Chatbot Screen
+![Chatbot Screen](https://github.com/user-attachments/assets/7834e513-f56f-47e9-8b08-3ad9fb99248c)
 
 
 ```
