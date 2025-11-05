@@ -132,7 +132,7 @@ First time use → Click Sign in with Google and give permissions
 ```
 ```
 Sample UI Screenshot
-```
+
 ## 📸 App UI Screenshots
 
 ### 🏠 Home UI
