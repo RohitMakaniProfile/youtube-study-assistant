@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EduTube Coach</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        input { width: 90%; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 15px; cursor: pointer; border-radius: 5px; border: none; margin-right: 10px; }
+        #process-button { background: #007bff; color: white; }
+        .google-btn { background: #4285F4; color: white; }
+        .action-btn { background: #28a745; color: white; display: none; }
+        h3 { border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+        #auth-status { padding: 10px; border-radius: 5px; }
+        .logged-in { background: #e6ffed; border: 1px solid #28a745; }
+        .logged-out { background: #fff0f0; border: 1px solid #dc3545; }
+
+        /* Chatbox CSS */
+        #chat-container { margin-top: 30px; border: 1px solid #ccc; border-radius: 5px; }
+        #chat-messages { height: 200px; overflow-y: auto; padding: 10px; background: #fafafa; }
+        #chat-input-area { display: flex; border-top: 1px solid #ccc; }
+        #chat-input { width: 80%; margin: 0; border: none; padding: 10px; border-radius: 0 0 0 5px;}
+        #chat-send-btn { width: 20%; margin: 0; background: #5a99e3; color: white; border: none; border-radius: 0 0 5px 0;}
+        .chat-msg { margin-bottom: 5px; }
+        .user-msg { text-align: right; color: #0056b3; }
+        .bot-msg { text-align: left; color: #333; }
+    </style>
+</head>
+<body>
+    <h2>🚀 EduTube Coach</h2>
+
+    <div id="auth-status">Checking login status...</div>
+    <a href="http://127.0.0.1:8000/login">
+        <button id="login-btn" class="google-btn" style="display:none;">
+            Sign in with Google to Link Calendar & Drive
+        </button>
+    </a>
+    <hr style="margin: 20px 0;">
+
+    <p>Paste a YouTube video URL to get started:</p>
+    <input type="text" id="youtube-url" placeholder="https://www.youtube.com/watch?v=...">
+    <button id="process-button">Get Summary & Flashcards</button>
+    <h3 id="loading-message" style="display:none;">Loading... please wait.</h3>
+
+    <div id="output-section" style="display:none;">
+        <button id="calendar-btn" class="action-btn">Add Study Event to Calendar</button>
+        <button id="drive-btn" class="action-btn">Save Flashcards to Drive</button>
+        <div id="action-status" style="margin-top:10px; font-style: italic;"></div>
+
+        <h3>Summary:</h3>
+        <pre id="summary-output">Summary will appear here...</pre>
+        <h3>Flashcards:</h3>
+        <pre id="flashcards-output">Flashcards will appear here...</pre>
+    </div>
+
+    <div id="chat-container">
+        <div id="chat-messages">
+            <div class="chat-msg bot-msg">Hello! Process a video and then ask me questions about it.</div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask a question about the summary...">
+            <button id="chat-send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Saare Elements (waisa hi) ---
+        const processButton = document.getElementById('process-button');
+        const urlInput = document.getElementById('youtube-url');
+        const summaryOutput = document.getElementById('summary-output');
+        const flashcardsOutput = document.getElementById('flashcards-output');
+        const loadingMessage = document.getElementById('loading-message');
+        const outputSection = document.getElementById('output-section');
+        const authStatus = document.getElementById('auth-status');
+        const loginBtn = document.getElementById('login-btn');
+        const calendarBtn = document.getElementById('calendar-btn');
+        const driveBtn = document.getElementById('drive-btn');
+        const actionStatus = document.getElementById('action-status');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        let isLoggedIn = false;
+
+        function addChatMessage(message, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-msg ${sender}-msg`;
+            msgDiv.textContent = message;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // --- Page Load ---
+        window.addEventListener('load', async () => {
+            try {
+                // --- FIX: Yahaan address '127.0.0.1' hona chahiye ---
+                const response = await fetch('http://127.0.0.1:8000/check-auth');
+                const data = await response.json();
+                if (data.logged_in) {
+                    authStatus.textContent = `✅ Logged in to Google as: ${data.email}`;
+                    authStatus.className = "logged-in";
+                    isLoggedIn = true;
+                } else {
+                    authStatus.textContent = "❌ Not logged in. Please sign in to save to Calendar/Drive/Gmail.";
+                    authStatus.className = "logged-out";
+                    loginBtn.style.display = 'inline-block';
+                    isLoggedIn = false;
+                }
+            } catch (error) {
+                authStatus.textContent = "Error checking login status.";
+            }
+        });
+
+        // --- "Get Summary" Button Click ---
+        processButton.addEventListener('click', async () => {
+            const url = urlInput.value;
+            if (!url) {
+                alert('Please paste a YouTube URL first.');
+                return;
+            }
+            loadingMessage.style.display = 'block';
+            outputSection.style.display = 'none';
+            actionStatus.textContent = '';
+            addChatMessage("Processing video... please wait.", "bot");
+
+            try {
+                // --- FIX: Yahaan address '127.0.0.1' hona chahiye ---
+                const response = await fetch('http://127.0.0.1:8000/api/process-video', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ url: url })
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Something went wrong');
+                }
+                const data = await response.json();
+
+                summaryOutput.textContent = data.summary;
+                flashcardsOutput.textContent = data.flashcards;
+                outputSection.style.display = 'block';
+
+                if (isLoggedIn) {
+                    calendarBtn.style.display = 'inline-block';
+                    driveBtn.style.display = 'inline-block';
+                    actionStatus.textContent = `✅ ${data.email_status}`;
+                }
+                addChatMessage("Video processed! You can now ask me questions about the summary.", "bot");
+
+            } catch (error) {
+                summaryOutput.textContent = `Error: ${error.message}`;
+                addChatMessage(`Error: ${error.message}`, "bot");
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        });
+
+        // --- "Add to Calendar" Button Click ---
+        calendarBtn.addEventListener('click', async () => {
+            const summary = summaryOutput.textContent;
+            actionStatus.textContent = 'Adding to calendar...';
+            try {
+                // --- FIX: Yahaan address '127.0.0.1' hona chahiye ---
+                const response = await fetch('http://127.0.0.1:8000/api/add-to-calendar', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        summary: summary,
+                        description: `Study session for video: ${urlInput.value}\n\nSummary:\n${summary}`
+                    })
+                });
+                if (!response.ok) throw new Error('Failed to add event.');
+                const data = await response.json();
+                actionStatus.textContent = `✅ ${data.message}`;
+            } catch (error) {
+                actionStatus.textContent = `❌ Error: ${error.message}`;
+            }
+        });
+
+        // --- "Save Flashcards" Button Click ---
+        driveBtn.addEventListener('click', async () => {
+            const flashcards = flashcardsOutput.textContent;
+            actionStatus.textContent = 'Saving to Drive...';
+            try {
+                // --- FIX: Yahaan address '127.0.0.1' hona chahiye ---
+                const response = await fetch('http://127.0.0.1:8000/api/save-flashcards', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ flashcards: flashcards })
+                });
+                if (!response.ok) throw new Error('Failed to save file.');
+                const data = await response.json();
+                actionStatus.textContent = `✅ ${data.message}`;
+            } catch (error) {
+                actionStatus.textContent = `❌ Error: ${error.message}`;
+            }
+        });
+
+        // --- Chatbot JS ---
+        async function handleChatSend() {
+            const message = chatInput.value;
+            if (!message) return;
+            addChatMessage(message, "user");
+            chatInput.value = '';
+
+            try {
+                // --- FIX: Yahaan address '127.0.0.1' hona chahiye ---
+                const response = await fetch('http://127.0.0.1:8000/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: message })
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Something went wrong');
+                }
+                const data = await response.json();
+                addChatMessage(data.reply, "bot");
+            } catch (error) {
+                addChatMessage(`Error: ${error.message}`, "bot");
+            }
+        }
+        chatSendBtn.addEventListener('click', handleChatSend);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleChatSend();
+        });
+
+    </script>
+</body>
+</html>
