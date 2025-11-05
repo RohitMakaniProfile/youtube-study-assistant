@@ -133,14 +133,12 @@ First time use → Click Sign in with Google and give permissions
 ```
 Sample UI Screenshot
 ```
-## 🖼️ App Interface Preview
+## 📸 App UI Screenshots
 
-## 🖼️ App UI Screenshots
+### 🏠 Home UI
+![Home UI](assets/first.png)
 
-### 📺 Summary & Home UI
-![Summary UI](assets/first.png)
-
-### 🧠  Flashcards
+### 🧠 Flashcards UI
 ![Flashcards UI](assets/second.png)
 
 ### 🤖 AI Tutor Chatbot
